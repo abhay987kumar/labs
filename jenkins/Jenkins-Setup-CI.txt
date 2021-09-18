@@ -36,3 +36,21 @@ job2-unittest    : test                 : target/surefire-reports/*.xml
 job3-codecoverage : cobertura:cobertura -Dcobertura.report.format=xml  : target/site/cobertura/coverage.xml ( publish cobertura coverage report )
                  
 job4-package     : package              : NA
+
+
+==================================================================================================================
+shell script for build section to build and push the images into docker hub
+
+cd /opt/deploy
+sudo cp /var/lib/jenkins/workspace/Package/target/petclinic.war .
+sudo touch Dockerfile
+sudo chmod 777 Dockerfile
+cat <<EOT>> Dockerfile
+FROM tomcat:8
+ADD petclinic.war /usr/local/tomcat/webapps/
+CMD "catalina.sh" "run"
+EXPOSE 8080
+EOT
+sudo docker build -t abhay987kumar/petclinic:$BUILD_NUMBER .
+sudo docker login -u abhay987kumar -p Aspamc@91
+sudo docker push abhay987kumar/petclinic:$BUILD_NUMBER
